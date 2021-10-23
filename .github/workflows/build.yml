@@ -38,7 +38,7 @@ jobs:
       run: cp -r src/vmextension-template compiledFunction/templates
 
     - name: Zip the compiledFunction folder
-      run: zip -r src/solution-template/function.zip compiledFunction
+      run: zip -r src/solution-template/function.zip compiledFunction/*
 
     - name: Create and upload solution-template zip file
       uses: actions/upload-artifact@v2.2.0
