@@ -23,13 +23,13 @@ jobs:
       run: dotnet restore src/function
 
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build src/function --no-restore
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test src/function --no-build --verbosity normal
 
     - name: Publish solution code to folder
-      run: dotnet publish -c Release -o functionAppZipFileContent
+      run: dotnet publish src/function -c Release -o functionAppZipFileContent
 
     - name: Copy scripts to folder
       run: cp -r scripts functionAppZipFileContent/scripts
