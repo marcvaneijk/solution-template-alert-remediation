@@ -28,18 +28,24 @@ jobs:
     - name: Test
       run: dotnet test src/function --no-build --verbosity normal
 
-    - name: Publish solution code to folder
-      run: dotnet publish src/function -c Release -o functionAppZipFileContent
+    - name: Publish solution code a folder called compiledFunction
+      run: dotnet publish src/function -c Release -o compiledFunction
 
-    - name: Copy scripts to folder
-      run: cp -r scripts functionAppZipFileContent/scripts
+    - name: Copy scripts to the function folder
+      run: cp -r scripts compiledFunction/scripts
 
-    - name: Create and upload function app zip file
+    - name: Copy vm-extension templates to the function folder
+      run: cp -r src/vmextension-template compiledFunction/templates
+
+    - name: Zip the compiledFunction folder
+      run: zip -r src/solution-template/function.zip compiledFunction
+
+    - name: Create and upload solution-template zip file
       uses: actions/upload-artifact@v2.2.0
       with:
         # Artifact name
-        name: functionApp
+        name: solution-template
         # file, directory or wildcard pattern describing the content to upload
-        path: functionAppZipFileContent
+        path: src/solution-template
         if-no-files-found: error
         
