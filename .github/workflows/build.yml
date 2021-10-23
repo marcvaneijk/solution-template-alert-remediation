@@ -1,0 +1,45 @@
+name: Build Solution Template
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Publish solution code to folder
+      run: dotnet publish -c Release -o functionAppZipFileContent
+
+    - name: Copy scripts to folder
+      run: cp -r scripts functionAppZipFileContent/scripts
+
+    - name: Create and upload function app zip file
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        # Artifact name
+        name: functionApp
+        # file, directory or wildcard pattern describing the content to upload
+        path: functionAppZipFileContent
+        if-no-files-found: error
+        
