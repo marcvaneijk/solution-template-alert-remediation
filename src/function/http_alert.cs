@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Azure.Identity;
 using System.Net.Http;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 
 namespace Alert.Remediation
 {
@@ -17,9 +18,12 @@ namespace Alert.Remediation
         [FunctionName("http_alert")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+            ILogger log, ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
+
+            string filePath = Path.Combine(context.FunctionAppDirectory, "scripts/restart-service.ps1");
+            var fileContent = System.IO.File.ReadAllText(filePath);
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic alert = JsonConvert.DeserializeObject(requestBody);
@@ -27,6 +31,9 @@ namespace Alert.Remediation
             string resourceId = alert.resourceId;
             string alertAction = alert.action;
             string scriptArguments = alert.arguments;
+
+            // Convert to resourceId Object
+            var resourceIdObject = ResourceId.FromString(resourceId);
 
             // Uri
             Uri azureManagementUri = new Uri("https://management.azure.com/");
@@ -51,6 +58,24 @@ namespace Alert.Remediation
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
             Machine machine = JsonConvert.DeserializeObject<Machine>(content);
+
+            
+            // Test if custom script extension exist (get name and timestamp)
+            foreach (MachineResource existingExtension in machine.resources) 
+            {
+                // Test if OS is linux or windows and has existing vm extension
+                if (machine.properties.osName == "windows" && existingExtension.properties.type == "CustomScriptExtension"){}
+                else if (machine.properties.osName == "linux" && existingExtension.properties.type == "CustomScript"){}
+                else {}
+            }
+
+            // Deployment
+            string deploymentName = "";
+            Uri azureRestDeploymentUri = new Uri(azureManagementUri, $"/subscriptions/{resourceIdObject.SubscriptionId}/resourcegroups/{resourceIdObject.ResourceGroupName}/providers/Microsoft.Resources/deployments/{deploymentName}?api-version=2021-04-01");
+            // response = await client.PutAsync(azureRestDeploymentUri, content);
+            // response.EnsureSuccessStatusCode();
+            // content = await response.Content.ReadAsStringAsync();
+            // Machine machine = JsonConvert.DeserializeObject<Machine>(content);
             
             string name = req.Query["name"];
 

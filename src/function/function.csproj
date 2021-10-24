@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.5.0" />
+    <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.38.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
   </ItemGroup>
   <ItemGroup>
@@ -15,5 +16,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../scripts/*" CopyToOutputDirectory="PreserveNewest" Link="scripts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="../vmextension-template/*" CopyToOutputDirectory="PreserveNewest" Link="vmextension-template/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

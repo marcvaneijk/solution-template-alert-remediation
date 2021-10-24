@@ -31,12 +31,6 @@ jobs:
     - name: Publish solution code a folder called compiledFunction
       run: dotnet publish src/function -c Release -o compiledFunction
 
-    - name: Copy scripts to the function folder
-      run: cp -r scripts compiledFunction/scripts
-
-    - name: Copy vm-extension templates to the function folder
-      run: cp -r src/vmextension-template compiledFunction/templates
-
     - name: Zip the compiledFunction folder (requires changing path to the source folder)
       run: (cd compiledFunction && zip -r ../src/solution-template/function.zip .)
 
