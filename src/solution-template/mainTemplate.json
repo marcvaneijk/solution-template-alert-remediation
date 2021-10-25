@@ -4,6 +4,15 @@
     "parameters": {
         "zipFileUrl": {
             "type": "string"
+        },
+        "tenantId": {
+            "type": "string"
+        },
+        "appId": {
+            "type": "string"
+        },
+        "appSecret": {
+            "type": "securestring"
         }
 
     },
@@ -78,6 +87,18 @@
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~3"
+                        },
+                        {
+                            "name": "AZURE_TENANT_ID",
+                            "value": "[parameters('tenantId')]"
+                        },
+                        {
+                            "name": "AZURE_CLIENT_ID",
+                            "value": "[parameters('appId')]"
+                        },
+                        {
+                            "name": "AZURE_CLIENT_SECRET",
+                            "value": "[parameters('appSecret')]"
                         }
                     ]
                 }
