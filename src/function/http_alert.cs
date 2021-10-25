@@ -15,7 +15,6 @@ using Azure.Storage.Files.Shares;
 using Azure.Storage.Sas;
 using System.Linq;
 
-
 namespace Alert.Remediation
 {
     public static class http_alert
@@ -133,8 +132,7 @@ namespace Alert.Remediation
             };
       
             var deplopymentBody = new StringContent(JsonConvert.SerializeObject(deploymentBody), System.Text.Encoding.UTF8, "application/json");
-            //var test123 = await deplopymentBody.ReadAsStringAsync();
-            string deploymentName = resourceIdObject.Name;
+            string deploymentName = "vm-extension-" + resourceIdObject.Name + "-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
             Uri azureRestDeploymentUri = new Uri(azureManagementUri, $"/subscriptions/{resourceIdObject.SubscriptionId}/resourcegroups/{resourceIdObject.ResourceGroupName}/providers/Microsoft.Resources/deployments/{deploymentName}?api-version=2021-04-01");
             var deploymentResponse = await httpClient.PutAsync(azureRestDeploymentUri, deplopymentBody);
             deploymentResponse.EnsureSuccessStatusCode();
