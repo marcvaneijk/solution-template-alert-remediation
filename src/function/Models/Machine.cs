@@ -5,36 +5,36 @@ namespace Alert.Remediation
     public class Machine
     {
         // https://docs.microsoft.com/en-us/rest/api/hybridcompute/machines/get#machine
-        public string id { get; set; }
-        public string location { get; set; }
-        public MachineProperties properties { get; set; }
-        public List<MachineResource> resources { get; set; }
+        public string Id { get; set; }
+        public string Location { get; set; }
+        public MachineProperties Properties { get; set; }
+        public List<MachineResource> Resources { get; set; }
     }
 
     public class MachineProperties
     {
-        public string status { get; set; }
-        public string osName { get; set; }
+        public string Status { get; set; }
+        public string OsName { get; set; }
     }
 
     public class MachineResource
     {
-        public string id { get; set; }
-        public string name { get; set; }
-        public string type { get; set; }
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
 
-        public MachineResourceProperties properties { get; set; }
+        public MachineResourceProperties Properties { get; set; }
     }
 
     public class MachineResourceProperties
     {
-        public string publisher { get; set; }
-        public string type { get; set; }
-        public MachineResourcePropertySettings settings { get; set; }
+        public string Publisher { get; set; }
+        public string Type { get; set; }
+        public MachineResourcePropertySettings Settings { get; set; }
     }
 
     public class MachineResourcePropertySettings
     {
-        public string timestamp { get; set; }
+        public string Timestamp { get; set; }
     }
 }

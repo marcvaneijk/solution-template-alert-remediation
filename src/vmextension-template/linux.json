@@ -8,13 +8,19 @@
         "location": {
             "type": "string"
         },
+        "vmExtensionName": {
+            "type": "string"
+        },
         "timestamp": {
             "type": "string"
         },
-        "scriptUrl": {
+        "scriptUri": {
             "type": "string"
         },
-        "commandToExecute": {
+        "scriptName":{
+            "type": "string"
+        },
+        "scriptArguments": {
             "type": "string"
         }
 
@@ -23,7 +29,7 @@
     },
     "resources": [
         {
-            "name": "[concat(parameters('vmName'),'/CustomScript')]",
+            "name": "[concat(parameters('vmName'),'/',parameters('vmExtensionName'))]",
             "type": "Microsoft.HybridCompute/machines/extensions",
             "location": "[parameters('location')]",
             "apiVersion": "2020-08-02",
@@ -35,9 +41,9 @@
                     "timestamp": "[parameters('timestamp')]"
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[parameters('commandToExecute')]",
+                    "commandToExecute": "[concat('sh ', parameters('scriptName'), ' ', parameters('scriptArguments'))]",
                     "fileUris": [
-                        "[parameters('scriptUrl')]"
+                        "[parameters('scriptUri')]"
                     ]
                 }
             }

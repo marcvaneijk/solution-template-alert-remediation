@@ -1,0 +1,14 @@
+{
+    "action": [
+        {
+            "name": "restart-service",
+            "windowsScriptUri": "built-in",
+            "linuxScriptUri": "built-in"
+        },
+        {
+            "name": "stop-service",
+            "windowsScriptUri": "https://raw.github.com/someUrl/script1.ps1",
+            "linuxScriptUri": "https://raw.github.com/someUrl/script1.sh"
+        }
+    ]
+}
