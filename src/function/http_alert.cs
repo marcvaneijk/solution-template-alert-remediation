@@ -67,6 +67,17 @@ namespace Alert.Remediation
                 var machineResponseContent = await machineResponse.Content.ReadAsStringAsync();
                 Machine machine = JsonConvert.DeserializeObject<Machine>(machineResponseContent);
 
+                // If machine is offline?
+                if (machine.Properties.Status != "Connected")
+                {
+                    FunctionResponse functionResponse = new FunctionResponse
+                    {
+                        State = "notExecuted",
+                        ResourceId = machine.Id,
+                        ResourceStatus = machine.Properties.Status
+                    };
+                    return new OkObjectResult(functionResponse);
+                }
                 // Get extension name and timestamp
                 string extensionName = "CustomScript";
                 int timestamp = 1;
@@ -76,12 +87,49 @@ namespace Alert.Remediation
                     if (machine.Properties.OsName == "windows" && existingExtension.Properties.Type == "CustomScriptExtension")
                     {
                         extensionName = existingExtension.Name;
-                        timestamp = int.Parse(existingExtension.Properties.Settings.Timestamp) + 1;
+                        if (existingExtension.Properties.Settings.GetType().GetProperty("Timestamp") != null)
+                        {
+                            timestamp = int.Parse(existingExtension.Properties.Settings.Timestamp) + 1;
+                        }
+
+                        // If existing vm extension is still executing or in an error state
+                        if (existingExtension.Properties.ProvisioningState != "Succeeded")
+                        {
+                            FunctionResponse functionResponse = new FunctionResponse
+                            {
+                                State = "notExecuted",
+                                ResourceId = machine.Id,
+                                ResourceStatus = machine.Properties.Status,
+                                ExtensionResourceId = existingExtension.Id,
+                                ExtensionResourceProvisioningState = existingExtension.Properties.ProvisioningState
+
+                            };
+                            return new OkObjectResult(functionResponse);
+                        }
+
                     }
                     else if (machine.Properties.OsName == "linux" && existingExtension.Properties.Type == "CustomScript")
                     {
                         extensionName = existingExtension.Name;
-                        timestamp = int.Parse(existingExtension.Properties.Settings.Timestamp) + 1;
+                        if (existingExtension.Properties.Settings.GetType().GetProperty("Timestamp") != null)
+                        {
+                            timestamp = int.Parse(existingExtension.Properties.Settings.Timestamp) + 1;
+                        }
+
+                        // If existing vm extension is still executing or in an error state
+                        if (existingExtension.Properties.ProvisioningState != "Succeeded")
+                        {
+                            FunctionResponse functionResponse = new FunctionResponse
+                            {
+                                State = "notExecuted",
+                                ResourceId = machine.Id,
+                                ResourceStatus = machine.Properties.Status,
+                                ExtensionResourceId = existingExtension.Id,
+                                ExtensionResourceProvisioningState = existingExtension.Properties.ProvisioningState
+
+                            };
+                            return new OkObjectResult(functionResponse);
+                        }
                     }
                     else { }
                 }
@@ -149,7 +197,8 @@ namespace Alert.Remediation
 
                 return new OkObjectResult(responseMessage);
             }
-            catch (Exception ex){
+            catch (Exception ex)
+            {
                 log.LogError($"Caught exception: {ex.Message}");
                 return new BadRequestObjectResult(ex.Message);
             }

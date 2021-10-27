@@ -30,6 +30,7 @@ namespace Alert.Remediation
     {
         public string Publisher { get; set; }
         public string Type { get; set; }
+        public string ProvisioningState { get; set; }
         public MachineResourcePropertySettings Settings { get; set; }
     }
 
