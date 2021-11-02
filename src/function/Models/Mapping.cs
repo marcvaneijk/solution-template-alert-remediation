@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Alert.Remediation
+namespace CustomScript.Webhook
 {
     public class Mapping
     {

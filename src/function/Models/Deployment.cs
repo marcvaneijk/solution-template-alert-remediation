@@ -1,4 +1,4 @@
-namespace Alert.Remediation
+namespace CustomScript.Webhook
 {
     public class DeploymentParameters
     {

@@ -15,11 +15,11 @@ using Azure.Storage.Files.Shares;
 using Azure.Storage.Sas;
 using System.Linq;
 
-namespace Alert.Remediation
+namespace CustomScript.Webhook
 {
-    public static class http_alert
+    public static class http_trigger
     {
-        [FunctionName("http_alert")]
+        [FunctionName("http_trigger")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log, ExecutionContext context)
@@ -29,12 +29,12 @@ namespace Alert.Remediation
             try
             {
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                dynamic alert = JsonConvert.DeserializeObject(requestBody);
+                dynamic trigger = JsonConvert.DeserializeObject(requestBody);
 
                 // From webhook
-                string resourceId = alert.resourceId;
-                string alertAction = alert.action;
-                string scriptArguments = alert.arguments;
+                string resourceId = trigger.resourceId;
+                string triggerAction = trigger.action;
+                string scriptArguments = trigger.arguments;
 
                 // Convert to resourceId Object
                 var resourceIdObject = ResourceId.FromString(resourceId);
@@ -46,7 +46,7 @@ namespace Alert.Remediation
                 string mappingFilePath = Path.Combine(context.FunctionAppDirectory, "scripts/mapping.json");
                 var mapppingContent = System.IO.File.ReadAllText(mappingFilePath);
                 Mapping mapping = JsonConvert.DeserializeObject<Mapping>(mapppingContent);
-                MappingProperties scriptMapping = mapping.Action.Single(x => x.Name == alertAction);
+                MappingProperties scriptMapping = mapping.Action.Single(x => x.Name == triggerAction);
 
                 // Get Authentication Token
                 var defaultAzureCredential = new DefaultAzureCredential();
@@ -147,8 +147,8 @@ namespace Alert.Remediation
                 if (scriptAbsoluteUri == "built-in")
                 {
                     // SAS config
-                    if (machine.Properties.OsName == "windows") { scriptFileName = alertAction + ".ps1"; }
-                    else if (machine.Properties.OsName == "linux") { scriptFileName = alertAction + ".sh"; }
+                    if (machine.Properties.OsName == "windows") { scriptFileName = triggerAction + ".ps1"; }
+                    else if (machine.Properties.OsName == "linux") { scriptFileName = triggerAction + ".sh"; }
                     ShareFileClient shareFileClient = new ShareFileClient(Environment.GetEnvironmentVariable("WEBSITE_CONTENTAZUREFILECONNECTIONSTRING"), Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE"), $"site/wwwroot/scripts/{machine.Properties.OsName}/{scriptFileName}");
                     var sasUri = shareFileClient.GenerateSasUri(ShareFileSasPermissions.Read, DateTimeOffset.UtcNow.AddMinutes(10));
                     scriptUri = sasUri;
