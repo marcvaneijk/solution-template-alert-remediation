@@ -14,7 +14,10 @@ A deployed instance of the solution in this marketplace item consists of a singl
 - Storage Account
 - App Service Plan
 
-The Function App contains an HTTP listener. To HTTP listener is triggered on a HTTP POST. The body of the HTTP post requires three key/value pairs.
+The Function App contains an HTTP listener. To HTTP listener is triggered on a HTTP POST. The deployment template contains one output called ```triggerUrl```. The triggelUrl is the endpoint an HTTP POST is send to, to trigger the Function App. This URL is secured with a Function App key, which is provided as a querystring argument (```code```). If a HTTP POST is sent to the HTTP listener without the correct Function App key, the request fails. The HTTP Listener can be further secured using a [firewall](#firewall).
+
+
+The body of the HTTP post requires three key/value pairs.
 
 ``` JSON
 {
@@ -66,13 +69,39 @@ When a specific action in an HTTP POST triggers the execution of a script, where
 
 ## Authentication
 
-During the deployment of the solution template the consumer is asked for a Service Principal (```AppId```, ```AppSecret``` and ```TenantId```). This Service Principal is used to trigger the execution of the VM extension on machines specified in the body of HTTP POST. The Service Princicpal must be configured in advance of the deployment by the consumer.
+During the deployment of the solution template the consumer is asked for a Service Principal (```AppId```, ```AppSecret``` and ```TenantId```). This Service Principal is used to trigger the execution of the VM extension on machines specified in the body of HTTP POST. The Service Princicpal must be [created](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) by the consumer of the solution in advance of the deployment.
+
+The SPN needs permissions to update the VM extensions on Azure Arc enabled servers. Its up to the consumer to decide at what scope to assign these permissions (directly on the server resource, the resource group containing the server resource, or the subscription containing the server resource). The benefit of using an SPN is that the assignment with a single SPN can be done accross multiple scubriptions. This allows for a single webhook listener of all Azure Arc enabled servers, as long as they are present in a subscription that is part of the same tenant.
+
+You can either assing a the built-in role ```Azure Connected Machine Resource Administrator``` at the desired scope for the SPN or [create a custom role](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-definitions-list), with at least the following permissions:
+
+- Microsoft.HybridCompute/machines/read
+- Microsoft.HybridCompute/machines/UpgradeExtensions/action
+- Microsoft.HybridCompute/machines/extensions/read
+- Microsoft.HybridCompute/machines/extensions/write
+- Microsoft.HybridCompute/privateLinkScopes/*
+- Microsoft.HybridCompute/*/read
 
 ## Firewall
 
+To further narrow down the access to the HTTP listener. You can specify an IP address during the deployment of the solution. If this is specified the HTTP listener will only accept request from that IP address (e.g. public IP address of your monitoring solution that sends the HTTP post). HTTP requests from other IP addresses are dropped.
+
 ## Marketplace item
 
-## Extensibility
+This repository is configured with a GitHub Actions [workflow](blob/main/.github/workflows/build.yml). Each push or pull request on the main branch will trigger this workflow. The workflow performs the following steps (using an Ubuntu runner).
 
-## Next steps
+- Builds the .Net Core function app
+- Tests the .Net Core function app
+- Publishes the .Net Core function app
+- Zips the published .Net Core function app to function.zip
+- Uploads the solution template artifacts and the function.zip to the workflow artifacts
 
+For each workflow that is executed, an zip file is published as a workflow artifact (.zip file). This workflow artficat (called solution-template.zip), can be downloaded from the workflow summary page (in GitHub actions) and [published to the Azure Partner Portal](https://docs.microsoft.com/en-us/azure/marketplace/plan-azure-app-solution-template#deployment-package) as is.
+
+## Test the deployment and next steps
+
+Add your own PowerShell (.ps1) scripts to the [windows folder](/tree/main/src/scripts/windows) and bash (.sh) scripts to the [linux folder](/tree/main/src/scripts/linux). Update the mapping.json file accordingly. 
+
+To test the deployment without uploading it to the marketplace (through the Azure Partner Portal), download the ```solution-template.zip``` from the latest GitHub actions workflow. Extract the content of the ```solution-template.zip``` and upload the three files (```mainTemplate.json```, ```createUiDefinition.json``` and ```function.zip```) to a blob container in an Azure storage account. The public access level for the blob container must be set to ```Blob (anonymous read access for blobs only)```. Ensure that all three files are stored in the same path.
+
+Get the properties of the createUiDefintion.json file and copy the Url.
