@@ -100,6 +100,8 @@ This repository is configured with a GitHub Actions [workflow](/.github/workflow
 - Zips the published .Net Core function app to function.zip
 - Uploads the solution template artifacts and the function.zip to the workflow artifacts
 
+<img src="/images/solution-template.png">
+
 For each workflow that is executed, an zip file is published as a workflow artifact (.zip file). This workflow artficat (called solution-template.zip), can be downloaded from the workflow summary page (in GitHub actions) and [published to the Azure Partner Portal](https://docs.microsoft.com/en-us/azure/marketplace/plan-azure-app-solution-template#deployment-package) as is.
 
 ## Test the deployment and next steps
