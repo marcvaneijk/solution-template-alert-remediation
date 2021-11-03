@@ -4,7 +4,7 @@ The code in this repository generates a solution template artifact that can be u
 
 The goal of this solution is to minimize the complexity for integrating existing operational tooling with Azure Arc enabled servers. 
 
-![solution](/images/solution.png)
+<img src="/images/solution.png" width=400>
 
 Consider the following scenario's
 
