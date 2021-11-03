@@ -3,8 +3,77 @@
     "handler": "Microsoft.Azure.CreateUIDef",
     "version": "0.1.2-preview",
     "parameters": {
-        "basics": [ ],
+        "basics": [
+            {
+                "name": "sectionAuth",
+                "type": "Microsoft.Common.Section",
+                "label": "Hybrid Machine Authentication",
+                "visible": true,
+                "elements": [
+                    {
+                        "name": "appId",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Service Principal Id",
+                        "defaultValue": "",
+                        "toolTip": "AAD Application Id",
+                        "constraints": {
+                            "required": true
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "appSecret",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Service Principal Password",
+                            "confirmPassword": "Service Principal Confirm password"
+                          },
+                        "toolTip": "AAD Application secret",
+                        "constraints": {
+                            "required": true
+                        },
+                        "options": {
+                            "hideConfirmation": true
+                          },
+                        
+                        "visible": true
+                    }
+                ]
+            },
+            {
+            "name": "sectionAccess",
+            "type": "Microsoft.Common.Section",
+            "label": "Access restrictions",
+            "visible": true,
+            "elements": [
+                {
+                    "name": "restrictAccess",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Restrict access to the webhook listener"
+                },
+
+                {
+                    "name": "restrictAccessCidr",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "Allowed source IPv4 CIDR",
+                    "defaultValue": "",
+                    "toolTip": "Example: 208.130.0.0/16",
+                    "constraints": {
+                        "required": "[basics('sectionAccess').restrictAccess]",
+                        "validationMessage": "Only valid IPv4 CIDR is allowed"
+                    },
+                    "visible": "[basics('sectionAccess').restrictAccess]"
+                }
+            ]
+            }
+         ],
         "steps": [ ],
-        "outputs": { }
+        "outputs": {
+            "location": "[location()]",
+            "appId": "[basics('sectionAuth').appId]",
+            "appSecret": "[basics('sectionAuth').appSecret]",
+            "restrictAccess": "[basics('sectionAccess').restrictAccess]",
+            "restrictAccessCidr": "[basics('sectionAccess').restrictAccessCidr]"
+         }
     }
 }

@@ -28,11 +28,11 @@ The body of the HTTP post requires three key/value pairs.
 ```
 An HTTP Post to the web listerner can only have one resourceId, one action and any number of arguments.
 
-> Note: To change the solution in this repository to support a body with different names or json paths for the keys, update the values of the ```resourceId```, ```triggerAction``` and ```scriptArguments``` in the [Function App](/blob/main/src/function/http_trigger.cs#L34) to match the properties of the body in the post.
+> Note: To change the solution in this repository to support a body with different names or json paths for the keys, update the values of the ```resourceId```, ```triggerAction``` and ```scriptArguments``` in the [Function App](/src/function/http_trigger.cs#L34) to match the properties of the body in the post.
 
 ## Scripts
 
-Once the POST with the body is recieved, the Function App translates the action (specified in the body of the POST) to the script that needs to be executed on the resource (specified in the body of the POST). The mapping between the specified action and the script to be executed is configured in the [mapping.json](/blob/main/src/scripts/mapping.json) file. The mapping.json file contains an array of actions that have a Uri for the related Windows Script (.ps1) and a Uri for the related Linux script (.sh). If the resourceId (provided in the POST body) is a Linux machine, the specified Linux script will be executed, if the machine is a Windows machine, the specified Windows script will be executed.
+Once the POST with the body is recieved, the Function App translates the action (specified in the body of the POST) to the script that needs to be executed on the resource (specified in the body of the POST). The mapping between the specified action and the script to be executed is configured in the [mapping.json](/src/scripts/mapping.json) file. The mapping.json file contains an array of actions that have a Uri for the related Windows Script (.ps1) and a Uri for the related Linux script (.sh). If the resourceId (provided in the POST body) is a Linux machine, the specified Linux script will be executed, if the machine is a Windows machine, the specified Windows script will be executed.
 
 ```
 {
@@ -56,7 +56,7 @@ The mapping.json file can updated (replacing the existing examples and/or adding
 As you can see in the provided mappings.json the ```windowsScriptUri``` and the ```linuxScriptUri``` can have a value of ```built-in``` or reference an publically accessible HTTPS endpoint to the script.
 
 ### Scripts built-in
-If the value is set to ```built-in```, the Function App uses the scripts that are provided as part of this repository. Windows script that are placed in the [windows folder](/tree/main/src/scripts/windows) and Linux scripts that are placed in the [linux folder](/tree/main/src/scripts/linux) are automatically added to the solution by the GitHub Actions workflow. 
+If the value is set to ```built-in```, the Function App uses the scripts that are provided as part of this repository. Windows script that are placed in the [windows folder](/src/scripts/windows) and Linux scripts that are placed in the [linux folder](/src/scripts/linux) are automatically added to the solution by the GitHub Actions workflow. 
 
 Each deployed instance of this solution is configured with a file share in the storage account. Inside of this file share a copy of the scripts exists in ```site/wwwroot/scripts```. This folder in the share also contains the mapping.json. 
 
@@ -88,7 +88,7 @@ To further narrow down the access to the HTTP listener. You can specify an IP ad
 
 ## Marketplace item
 
-This repository is configured with a GitHub Actions [workflow](blob/main/.github/workflows/build.yml). Each push or pull request on the main branch will trigger this workflow. The workflow performs the following steps (using an Ubuntu runner).
+This repository is configured with a GitHub Actions [workflow](/.github/workflows/build.yml). Each push or pull request on the main branch will trigger this workflow. The workflow performs the following steps (using an Ubuntu runner).
 
 - Builds the .Net Core function app
 - Tests the .Net Core function app
@@ -100,8 +100,28 @@ For each workflow that is executed, an zip file is published as a workflow artif
 
 ## Test the deployment and next steps
 
-Add your own PowerShell (.ps1) scripts to the [windows folder](/tree/main/src/scripts/windows) and bash (.sh) scripts to the [linux folder](/tree/main/src/scripts/linux). Update the mapping.json file accordingly. 
+Add your own PowerShell (.ps1) scripts to the [windows folder](/src/scripts/windows) and bash (.sh) scripts to the [linux folder](/src/scripts/linux). Update the mapping.json file accordingly. 
 
 To test the deployment without uploading it to the marketplace (through the Azure Partner Portal), download the ```solution-template.zip``` from the latest GitHub actions workflow. Extract the content of the ```solution-template.zip``` and upload the three files (```mainTemplate.json```, ```createUiDefinition.json``` and ```function.zip```) to a blob container in an Azure storage account. The public access level for the blob container must be set to ```Blob (anonymous read access for blobs only)```. Ensure that all three files are stored in the same path.
 
-Get the properties of the createUiDefintion.json file and copy the Url.
+Get the properties of the mainTemplate.json file and copy the Url and also get the Url of the createUiDefintion.json.
+You will now have two Url's that look something like
+
+- https://{storageaccount}.blob.core.windows.net/{blobcontainer}/mainTemplate.json
+- https://{storageaccount}.blob.core.windows.net/{blobcontainer}/createUiDefintion.json
+
+Encode to URL-encoded format (replacing ```:``` with ```%3A``` and replacing ```/``` with ```%2F```). There are multiple online encoders that allows you to copy the Url and return the encoded format.
+
+Finally take the two encoded Url's and place them in the following string:
+
+```
+https://portal.azure.com/#create/Microsoft.Template/uri/{encodedMainTemplateUrl}/createUIDefinitionUri/{encodedcreateUiDefinitionUrl}
+```
+
+For example:
+
+```
+https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fmystorageaccount.blob.core.windows.net%2Fmycontainer%2FmainTemplate.json/createUIDefinitionUri/https%3A%2F%2Fmystorageaccount.blob.core.windows.net%2Fmycontainer%2FcreateUiDefinition.json
+```
+
+Copy this Url into a browser, sign into with the account you want to start the deployment with (if you're not signed in already) and the createUiDefinition will be loaded into the portal, guiding you through the installation, just like you were deploying the solution from the marketplace. Once the deployment completes, you can get the API Url from the Output section of the deployment.
