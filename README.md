@@ -2,7 +2,11 @@
 
 The code in this repository generates a solution template artifact that can be used to publish an Azure marketplace item. A deployed instance of the published marketplace item provides an HTTP webhook for executing Custom Scripts on Azure Arc enabled servers.
 
-The goal of this solution is to minimize the complexity for integrating existing operational tooling with Azure Arc enabled servers. Consider the following scenario's
+The goal of this solution is to minimize the complexity for integrating existing operational tooling with Azure Arc enabled servers. 
+
+![solution](/images/solution.png)
+
+Consider the following scenario's
 
 - You have an existing monitoring solution and you would like to enable auto-remediation for specific events that happen on your Azure Arc enabled servers. You are able to configure your monitoring solution with a rule that sneds an alert when a specific event occurs. The alert is typically sent to an external system (e.g. email, MS Teams, Slack, etc.) Most monitoring solutions are also able to send out an HTTP request to an external HTTP listener. The solution in this repository provides that external HTTP listener and translates the request (e.g. restart service) to the execution of a script on the specified Azure Arc enabled server.
 - You query Azure Resource Manager and identify a subset of Azure Arc enabled servers you would like to install an agent on. The solution in this repository provides that external HTTP listener and translates the request (e.g. install agent) to the execution of a script on the subset of specified Azure Arc enabled servers.
@@ -124,4 +128,4 @@ For example:
 https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fmystorageaccount.blob.core.windows.net%2Fmycontainer%2FmainTemplate.json/createUIDefinitionUri/https%3A%2F%2Fmystorageaccount.blob.core.windows.net%2Fmycontainer%2FcreateUiDefinition.json
 ```
 
-Copy this Url into a browser, sign into with the account you want to start the deployment with (if you're not signed in already) and the createUiDefinition will be loaded into the portal, guiding you through the installation, just like you were deploying the solution from the marketplace. Once the deployment completes, you can get the API Url from the Output section of the deployment.
+Copy this Url into a browser, sign into with the account you want to start the deployment with (if you're not signed in already) and the createUiDefinition will be loaded into the portal, guiding you through the installation, just like you were deploying the solution from the marketplace. Once the deployment completes, you can get the webhook Url from the Output section of the deployment.
