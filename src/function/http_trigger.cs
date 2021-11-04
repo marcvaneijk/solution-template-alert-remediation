@@ -26,18 +26,19 @@ namespace CustomScript.Webhook
         {
             log.LogInformation("Recieved an HTTP post, starting the function");
 
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            dynamic trigger = JsonConvert.DeserializeObject(requestBody);
+
+            // From webhook
+            string resourceId = trigger.resourceId;
+            string triggerAction = trigger.action;
+            string scriptArguments = trigger.arguments;
+
             try
             {
-                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                dynamic trigger = JsonConvert.DeserializeObject(requestBody);
-
-                // From webhook
-                string resourceId = trigger.resourceId;
-                string triggerAction = trigger.action;
-                string scriptArguments = trigger.arguments;
 
                 // Convert to resourceId Object
-                var resourceIdObject = ResourceId.FromString(resourceId);
+                ResourceId resourceIdObject = ResourceId.FromString(resourceId);
 
                 // Uri
                 Uri azureManagementUri = new Uri("https://management.azure.com/");
@@ -70,13 +71,14 @@ namespace CustomScript.Webhook
                 // If machine is offline?
                 if (machine.Properties.Status != "Connected")
                 {
-                    FunctionResponse functionResponse = new FunctionResponse
+                    FunctionResponse responseOffline = new FunctionResponse()
                     {
-                        State = "notExecuted",
+                        Result = "cancelled",
+                        Description = "Machine is offline, cancelled the operation.",
                         ResourceId = machine.Id,
                         ResourceStatus = machine.Properties.Status
                     };
-                    return new OkObjectResult(functionResponse);
+                    return new OkObjectResult(responseOffline);
                 }
                 // Get extension name and timestamp
                 string extensionName = "CustomScript";
@@ -95,16 +97,17 @@ namespace CustomScript.Webhook
                         // If existing vm extension is still executing or in an error state
                         if (existingExtension.Properties.ProvisioningState != "Succeeded")
                         {
-                            FunctionResponse functionResponse = new FunctionResponse
+                            FunctionResponse responseNotReady = new FunctionResponse()
                             {
-                                State = "notExecuted",
+                                Result = "cancelled",
+                                Description = "The VM Extension on the machine is not ready",
                                 ResourceId = machine.Id,
                                 ResourceStatus = machine.Properties.Status,
                                 ExtensionResourceId = existingExtension.Id,
                                 ExtensionResourceProvisioningState = existingExtension.Properties.ProvisioningState
 
                             };
-                            return new OkObjectResult(functionResponse);
+                            return new OkObjectResult(responseNotReady);
                         }
 
                     }
@@ -119,16 +122,16 @@ namespace CustomScript.Webhook
                         // If existing vm extension is still executing or in an error state
                         if (existingExtension.Properties.ProvisioningState != "Succeeded")
                         {
-                            FunctionResponse functionResponse = new FunctionResponse
+                            FunctionResponse responseNotReady = new FunctionResponse()
                             {
-                                State = "notExecuted",
+                                
                                 ResourceId = machine.Id,
                                 ResourceStatus = machine.Properties.Status,
                                 ExtensionResourceId = existingExtension.Id,
                                 ExtensionResourceProvisioningState = existingExtension.Properties.ProvisioningState
 
                             };
-                            return new OkObjectResult(functionResponse);
+                            return new OkObjectResult(responseNotReady);
                         }
                     }
                     else { }
@@ -195,12 +198,28 @@ namespace CustomScript.Webhook
 
                 string responseMessage = deploymentResponseContent;
 
-                return new OkObjectResult(responseMessage);
+                FunctionResponse responseAccept = new FunctionResponse()
+                {
+                    Result = "accepted",
+                    Description = deploymentResponseContent,
+                    ResourceId = machine.Id,
+                    ResourceStatus = machine.Properties.Status
+
+                };
+                return new OkObjectResult(responseAccept);
             }
             catch (Exception ex)
             {
                 log.LogError($"Caught exception: {ex.Message}");
-                return new BadRequestObjectResult(ex.Message);
+                
+                FunctionResponse responseError = new FunctionResponse()
+                {
+                    Result = "error",
+                    Description = ex.Message,
+                    ResourceId = resourceId
+
+                };
+                return new BadRequestObjectResult(responseError);
             }
         }
     }

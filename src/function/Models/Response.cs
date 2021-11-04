@@ -2,7 +2,8 @@ namespace CustomScript.Webhook
 {
     public class FunctionResponse
     {
-        public string State { get; set; }
+        public string Result { get; set; }
+        public string Description { get; set; }
         public string ResourceId { get; set; }
         public string ResourceStatus { get; set; }
         public string ExtensionResourceId { get; set; }
