@@ -95,7 +95,8 @@ namespace CustomScript.Webhook
                         }
 
                         // If existing vm extension is still executing or in an error state
-                        if (existingExtension.Properties.ProvisioningState != "Succeeded")
+                        if (existingExtension.Properties.ProvisioningState != "Succeeded"
+                            && existingExtension.Properties.ProvisioningState != "Failed")
                         {
                             FunctionResponse responseNotReady = new FunctionResponse()
                             {
@@ -120,7 +121,8 @@ namespace CustomScript.Webhook
                         }
 
                         // If existing vm extension is still executing or in an error state
-                        if (existingExtension.Properties.ProvisioningState != "Succeeded")
+                        if (existingExtension.Properties.ProvisioningState != "Succeeded"
+                            && existingExtension.Properties.ProvisioningState != "Failed")
                         {
                             FunctionResponse responseNotReady = new FunctionResponse()
                             {
@@ -211,7 +213,7 @@ namespace CustomScript.Webhook
             catch (Exception ex)
             {
                 log.LogError($"Caught exception: {ex.Message}");
-                
+
                 FunctionResponse responseError = new FunctionResponse()
                 {
                     Result = "error",
